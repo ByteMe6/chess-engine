@@ -2,12 +2,12 @@
 
 # ♟️ Chess Engine
 
-**A minimal chess engine written in TypeScript — from scratch, zero runtime dependencies.**
+**A minimal chess engine written in C++ — from scratch, no dependencies beyond the STL.**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Runtime deps: zero](https://img.shields.io/badge/runtime%20deps-zero-brightgreen)](package.json)
+[![C++17](https://img.shields.io/badge/C%2B%2B17-00599C?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/17)
+[![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=white)](CMakeLists.txt)
+[![Dependencies: STL only](https://img.shields.io/badge/dependencies-STL%20only-brightgreen)](src/chessEngine.hpp)
 [![Code size](https://img.shields.io/github/languages/code-size/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine)
-[![Last commit](https://img.shields.io/github/last-commit/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine/commits)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-green)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
@@ -36,23 +36,32 @@
 
 ## ✨ What is this?
 
-A small, readable chess engine with no libraries under the hood — every rule is hand-rolled. It knows how the pieces move, validates moves, understands algebraic notation, and renders the board right in your terminal.
+A small, readable chess engine with no libraries under the hood — every rule is hand-rolled on top of the C++ standard library. It knows how the pieces move, validates moves, understands algebraic notation, and renders the board right in your terminal.
 
-It's a learning project first: the code is written to be read. If you ever wondered how chess programs generate moves, `src/chessEngine.ts` is a ~250-line answer.
+It's a learning project first: the code is written to be read. If you ever wondered how chess programs generate moves, `src/chessEngine.hpp` is a ~250-line answer.
 
 ## 🚀 Quick start
+
+**Prebuilt binary** (macOS arm64 / Apple Silicon):
 
 ```bash
 git clone git@github.com:ByteMe6/chess-engine.git
 cd chess-engine
-npm install
-npm start
+./bin/chess-engine
+```
+
+**Build from source** (any platform with CMake ≥ 3.16 and a C++17 compiler):
+
+```bash
+cmake -B build
+cmake --build build
+./build/chess-engine
 ```
 
 You'll see the opening `1. e4 e5 2. Nf3` played out, board by board:
 
 ```console
-$ npm start
+$ ./bin/chess-engine
 
   a b c d e f g h
 8 r n b q k b n r 8
@@ -89,7 +98,7 @@ Uppercase = white, lowercase = black. Old-school FEN vibes.
 - ✅ **Algebraic notation in and out** — `makeMove("e2", "e4")` just works
 - ✅ **Move validation** — illegal moves are rejected
 - ✅ **ASCII board rendering** — with file/rank coordinates
-- ✅ **Strict TypeScript** — passes `tsc --strict`, with an exhaustive `never`-check on piece types
+- ✅ **Clean modern C++17** — `enum class` pieces, structured bindings, an exhaustive `switch` with a defensive `throw`, STL only
 
 | Piece | Letter | Movement |
 |:-----:|:------:|----------|
@@ -102,10 +111,10 @@ Uppercase = white, lowercase = black. Old-school FEN vibes.
 
 ## 🎮 Usage
 
-```ts
-import { Board, Piece, FigureName } from "./src/chessEngine";
+```cpp
+#include "src/chessEngine.hpp"
 
-// board setup — see src/index.ts for the full starting position
+// board setup — see src/main.cpp for the full starting position
 
 board.printBoard();               // render the board to the console
 
@@ -113,7 +122,7 @@ board.makeMove("e2", "e4");       // moves are plain algebraic notation
 board.makeMove("e7", "e5");
 board.makeMove("g1", "f3");       // illegal moves are simply rejected
 
-const knight = board.board[5][5];         // the knight that just landed on f3
+Piece knight = board.board[5][5];         // the knight that just landed on f3
 board.getPossibleMoves(knight);           // -> e5 (capture!), g5, d4, h4, g1
 ```
 
@@ -121,16 +130,16 @@ board.getPossibleMoves(knight);           // -> e5 (capture!), g5, d4, h4, g1
 
 | Method | Signature | What it does |
 |--------|-----------|--------------|
-| `makeMove` | `(from: string, to: string) => void` | Applies a move given in algebraic notation; validates it first |
-| `getPossibleMoves` | `(piece: Piece) => [number, number][]` | Every square the piece can legally move to |
-| `printBoard` | `() => void` | Renders the position as ASCII with coordinates |
-| `translateCoords` | `(square: string) => [number, number]` | `"e2"` → `[6, 4]`; throws on an invalid square |
-| `translateToNotation` | `(coords: [number, number]) => string` | `[6, 4]` → `"e2"` |
-| `isInsideBoard` | `(row: number, col: number) => boolean` | Bounds check for the 8×8 board |
+| `makeMove` | `void makeMove(const std::string& from, const std::string& to)` | Applies a move given in algebraic notation; validates it first |
+| `getPossibleMoves` | `std::vector<std::array<int, 2>> getPossibleMoves(const Piece& piece)` | Every square the piece can legally move to |
+| `printBoard` | `void printBoard()` | Renders the position as ASCII with coordinates |
+| `translateCoords` | `std::array<int, 2> translateCoords(const std::string& square)` | `"e2"` → `{6, 4}`; throws on an invalid square |
+| `translateToNotation` | `std::string translateToNotation(std::array<int, 2> coords)` | `{6, 4}` → `"e2"` |
+| `isInsideBoard` | `bool isInsideBoard(int row, int col)` | Bounds check for the 8×8 board |
 
 ## 🔍 How it works
 
-**Board representation.** The board is a plain 8×8 array of `Piece` objects. Row 0 is rank 8 (black's back rank), row 7 is rank 1 (white's back rank):
+**Board representation.** The board is a plain 8×8 `std::vector` of `Piece` objects. Row 0 is rank 8 (black's back rank), row 7 is rank 1 (white's back rank):
 
 ```
 board[row][col]
@@ -146,18 +155,19 @@ row 7  →  rank 1   └─ white's back rank
 
 **Validation.** `makeMove` translates the notation, finds the piece, and only applies the move if the target square is in `getPossibleMoves` — otherwise nothing happens.
 
-**Type safety.** The piece `switch` ends with a `never`-typed exhaustiveness check, so adding a new piece type without handling it becomes a compile error.
+**Type safety.** Pieces are an `enum class`, so square contents can't be confused with plain chars, and the piece `switch` ends with a defensive `throw` for the unreachable case.
 
 ## 📁 Project structure
 
 ```
 ├── src/
-│   ├── chessEngine.ts   # Board, Piece, move generation — the brains
-│   └── index.ts         # Demo: set up a board, play 1. e4 e5 2. Nf3
+│   ├── chessEngine.hpp   # Board, Piece, move generation — the brains
+│   └── main.cpp          # Demo: set up a board, play 1. e4 e5 2. Nf3
+├── bin/
+│   └── chess-engine      # prebuilt binary (macOS arm64)
 ├── assets/
-│   └── board.svg        # the board diagram above
-├── tsconfig.json        # strict mode on
-└── package.json
+│   └── board.svg         # the board diagram above
+└── CMakeLists.txt
 ```
 
 ## 🗺️ Roadmap
@@ -176,9 +186,9 @@ row 7  →  rank 1   └─ white's back rank
 Issues and pull requests are welcome — the [roadmap](#%EF%B8%8F-roadmap) is full of well-scoped ideas. See [CONTRIBUTING.md](CONTRIBUTING.md) for the two-minute version of the rules.
 
 ```bash
-npm install          # setup
-npm start            # run the demo
-npx tsc --noEmit     # type check
+cmake -B build            # setup
+cmake --build build       # compile (must stay warning-clean)
+./build/chess-engine      # run the demo
 ```
 
 ## 📜 License
@@ -189,6 +199,6 @@ npx tsc --noEmit     # type check
 
 <div align="center">
 
-*Made with ♟️ and TypeScript. If this repo taught you something, a ⭐ makes the pawns happy.*
+*Made with ♟️ and C++. If this repo taught you something, a ⭐ makes the pawns happy.*
 
 </div>

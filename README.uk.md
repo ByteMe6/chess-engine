@@ -2,12 +2,12 @@
 
 # ♟️ Шаховий рушій
 
-**Мінімалістичний шаховий рушій на TypeScript — з нуля, без жодної runtime-залежності.**
+**Мінімалістичний шаховий рушій на C++ — з нуля, без залежностей окрім STL.**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Runtime deps: zero](https://img.shields.io/badge/runtime%20deps-zero-brightgreen)](package.json)
+[![C++17](https://img.shields.io/badge/C%2B%2B17-00599C?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/17)
+[![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=white)](CMakeLists.txt)
+[![Dependencies: STL only](https://img.shields.io/badge/dependencies-STL%20only-brightgreen)](src/chessEngine.hpp)
 [![Code size](https://img.shields.io/github/languages/code-size/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine)
-[![Last commit](https://img.shields.io/github/last-commit/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine/commits)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-green)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
@@ -37,24 +37,33 @@
 <a id="-shcho-tse"></a>
 ## ✨ Що це?
 
-Невеликий і читабельний шаховий рушій без жодної бібліотеки під капотом — кожне правило написане вручну. Він знає, як ходять фігури, перевіряє легальність ходів, розуміє шахову нотацію та малює дошку прямо в терміналі.
+Невеликий і читабельний шаховий рушій без жодної бібліотеки під капотом — кожне правило написане вручну поверх стандартної бібліотеки C++. Він знає, як ходять фігури, перевіряє легальність ходів, розуміє шахову нотацію та малює дошку прямо в терміналі.
 
-Це насамперед навчальний проєкт: код написано так, щоб його було приємно читати. Якщо вам колись було цікаво, як шахові програми генерують ходи, — `src/chessEngine.ts` відповідає на це за ~250 рядків.
+Це насамперед навчальний проєкт: код написано так, щоб його було приємно читати. Якщо вам колись було цікаво, як шахові програми генерують ходи, — `src/chessEngine.hpp` відповідає на це за ~250 рядків.
 
 <a id="-shvydkyi-start"></a>
 ## 🚀 Швидкий старт
 
+**Готовий бінарник** (macOS arm64 / Apple Silicon):
+
 ```bash
 git clone git@github.com:ByteMe6/chess-engine.git
 cd chess-engine
-npm install
-npm start
+./bin/chess-engine
+```
+
+**Збірка з коду** (будь-яка платформа з CMake ≥ 3.16 і компілятором C++17):
+
+```bash
+cmake -B build
+cmake --build build
+./build/chess-engine
 ```
 
 Ви побачите, як розігрується дебют `1. e4 e5 2. Nf3`, дошка за дошкою:
 
 ```console
-$ npm start
+$ ./bin/chess-engine
 
   a b c d e f g h
 8 r n b q k b n r 8
@@ -92,7 +101,7 @@ Pawn e2: [ [ 5, 4 ], [ 4, 4 ] ]
 - ✅ **Шахова нотація на вхід і вихід** — `makeMove("e2", "e4")` просто працює
 - ✅ **Валідація ходів** — нелегальні ходи відхиляються
 - ✅ **ASCII-відображення дошки** — з координатами
-- ✅ **Строгий TypeScript** — проходить `tsc --strict`, з вичерпною `never`-перевіркою типів фігур
+- ✅ **Чистий сучасний C++17** — фігури як `enum class`, structured bindings, вичерпний `switch` із захисним `throw`, тільки STL
 
 | Фігура | Літера | Як ходить |
 |:------:|:------:|-----------|
@@ -106,10 +115,10 @@ Pawn e2: [ [ 5, 4 ], [ 4, 4 ] ]
 <a id="-vykorystannia"></a>
 ## 🎮 Використання
 
-```ts
-import { Board, Piece, FigureName } from "./src/chessEngine";
+```cpp
+#include "src/chessEngine.hpp"
 
-// налаштування дошки — повна початкова позиція у src/index.ts
+// налаштування дошки — повна початкова позиція у src/main.cpp
 
 board.printBoard();               // вивести дошку в консоль
 
@@ -117,7 +126,7 @@ board.makeMove("e2", "e4");       // ходи — звичайна шахова 
 board.makeMove("e7", "e5");
 board.makeMove("g1", "f3");       // нелегальні ходи просто відхиляються
 
-const knight = board.board[5][5];         // кінь, що щойно став на f3
+Piece knight = board.board[5][5];         // кінь, що щойно став на f3
 board.getPossibleMoves(knight);           // -> e5 (взяття!), g5, d4, h4, g1
 ```
 
@@ -126,17 +135,17 @@ board.getPossibleMoves(knight);           // -> e5 (взяття!), g5, d4, h4, 
 
 | Метод | Сигнатура | Що робить |
 |-------|-----------|-----------|
-| `makeMove` | `(from: string, to: string) => void` | Виконує хід у шаховій нотації; спершу перевіряє його легальність |
-| `getPossibleMoves` | `(piece: Piece) => [number, number][]` | Усі клітинки, куди фігура може легально піти |
-| `printBoard` | `() => void` | Малює позицію в ASCII з координатами |
-| `translateCoords` | `(square: string) => [number, number]` | `"e2"` → `[6, 4]`; кидає помилку на некоректній клітинці |
-| `translateToNotation` | `(coords: [number, number]) => string` | `[6, 4]` → `"e2"` |
-| `isInsideBoard` | `(row: number, col: number) => boolean` | Перевірка меж дошки 8×8 |
+| `makeMove` | `void makeMove(const std::string& from, const std::string& to)` | Виконує хід у шаховій нотації; спершу перевіряє його легальність |
+| `getPossibleMoves` | `std::vector<std::array<int, 2>> getPossibleMoves(const Piece& piece)` | Усі клітинки, куди фігура може легально піти |
+| `printBoard` | `void printBoard()` | Малює позицію в ASCII з координатами |
+| `translateCoords` | `std::array<int, 2> translateCoords(const std::string& square)` | `"e2"` → `{6, 4}`; кидає виняток на некоректній клітинці |
+| `translateToNotation` | `std::string translateToNotation(std::array<int, 2> coords)` | `{6, 4}` → `"e2"` |
+| `isInsideBoard` | `bool isInsideBoard(int row, int col)` | Перевірка меж дошки 8×8 |
 
 <a id="-yak-tse-pratsiuie"></a>
 ## 🔍 Як це працює
 
-**Представлення дошки.** Дошка — звичайний масив 8×8 з об'єктів `Piece`. Рядок 0 — це 8-ма горизонталь (тил чорних), рядок 7 — 1-ша горизонталь (тил білих):
+**Представлення дошки.** Дошка — звичайний `std::vector` 8×8 з об'єктів `Piece`. Рядок 0 — це 8-ма горизонталь (тил чорних), рядок 7 — 1-ша горизонталь (тил білих):
 
 ```
 board[row][col]
@@ -152,19 +161,20 @@ row 7  →  1-ша горизонталь   └─ тил білих
 
 **Валідація.** `makeMove` перекладає нотацію, знаходить фігуру і виконує хід лише тоді, коли цільова клітинка є в `getPossibleMoves` — інакше нічого не відбувається.
 
-**Типобезпека.** `switch` по фігурах завершується вичерпною перевіркою з типом `never`: додати новий тип фігури й забути його обробити — помилка компіляції.
+**Типобезпека.** Фігури — це `enum class`, тож вміст клітинки не сплутати зі звичайним символом, а `switch` по фігурах завершується захисним `throw` для недосяжного випадку.
 
 <a id="-struktura-proiektu"></a>
 ## 📁 Структура проєкту
 
 ```
 ├── src/
-│   ├── chessEngine.ts   # Board, Piece, генерація ходів — мозок проєкту
-│   └── index.ts         # Демо: створює дошку і грає 1. e4 e5 2. Nf3
+│   ├── chessEngine.hpp   # Board, Piece, генерація ходів — мозок проєкту
+│   └── main.cpp          # Демо: створює дошку і грає 1. e4 e5 2. Nf3
+├── bin/
+│   └── chess-engine      # зібраний бінарник (macOS arm64)
 ├── assets/
-│   └── board.svg        # діаграма дошки вище
-├── tsconfig.json        # строгий режим увімкнено
-└── package.json
+│   └── board.svg         # діаграма дошки вище
+└── CMakeLists.txt
 ```
 
 <a id="-plany"></a>
@@ -185,9 +195,9 @@ row 7  →  1-ша горизонталь   └─ тил білих
 Issues та pull requests вітаються — у [планах](#%EF%B8%8F-plany) повно добре окреслених ідей. Правила на дві хвилини читання — у [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
-npm install          # налаштування
-npm start            # запустити демо
-npx tsc --noEmit     # перевірка типів
+cmake -B build            # налаштування
+cmake --build build       # компіляція (має лишатися без попереджень)
+./build/chess-engine      # запустити демо
 ```
 
 <a id="-litsenziia"></a>
@@ -199,6 +209,6 @@ npx tsc --noEmit     # перевірка типів
 
 <div align="center">
 
-*Зроблено з ♟️ та TypeScript. Якщо цей репозиторій вас чогось навчив — ⭐ потішить пішаків.*
+*Зроблено з ♟️ та C++. Якщо цей репозиторій вас чогось навчив — ⭐ потішить пішаків.*
 
 </div>

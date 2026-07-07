@@ -1,5 +1,6 @@
 .env
 *.rb
 *.ru
-node_modules
+.claude
 build/
+.DS_Store
