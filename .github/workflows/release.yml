@@ -36,6 +36,9 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -C Release
+
       - name: Smoke test (Unix)
         if: runner.os != 'Windows'
         run: ./build/chess-engine

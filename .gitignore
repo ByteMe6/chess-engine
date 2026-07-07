@@ -11,3 +11,4 @@ CMakeCache.txt
 *.cmake
 Makefile
 /chess-engine
+/tests/tests

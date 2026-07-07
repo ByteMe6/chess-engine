@@ -9,6 +9,7 @@ git clone git@github.com:ByteMe6/chess-engine.git
 cd chess-engine
 cmake -B build
 cmake --build build       # must compile clean
+ctest --test-dir build    # tests must stay green
 ./build/chess-engine      # run the demo
 ```
 
@@ -28,7 +29,7 @@ The [roadmap in the README](README.md#%EF%B8%8F-roadmap) is the backlog — cast
 ## Submitting
 
 1. Fork, create a branch, make the change.
-2. Make sure the build is clean and `./build/chess-engine` still plays its little opening.
+2. Make sure the build is clean, `ctest --test-dir build` is green, and `./build/chess-engine` still plays its little game. New rules deserve new tests in `tests/tests.cpp`.
 3. Open a PR with a short description of *why*, not just *what*.
 
 That's it. ♟️

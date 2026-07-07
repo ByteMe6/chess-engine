@@ -7,6 +7,7 @@
 [![C++17](https://img.shields.io/badge/C%2B%2B17-00599C?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/17)
 [![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=white)](CMakeLists.txt)
 [![Release](https://img.shields.io/github/v/release/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine/releases/latest)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ByteMe6/chess-engine/test.yml?label=tests)](https://github.com/ByteMe6/chess-engine/actions/workflows/test.yml)
 [![Dependencies: STL only](https://img.shields.io/badge/dependencies-STL%20only-brightgreen)](src/chessEngine.hpp)
 [![Code size](https://img.shields.io/github/languages/code-size/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-green)](LICENSE)
@@ -187,6 +188,8 @@ row 7  →  1-ша горизонталь   └─ тил білих
 ├── src/
 │   ├── chessEngine.hpp   # Board, Piece, генерація ходів — мозок проєкту
 │   └── main.cpp          # Демо: коротка партія до мату
+├── tests/
+│   └── tests.cpp         # тести — запуск через ctest
 ├── bin/
 │   └── chess-engine      # зібраний бінарник (macOS universal)
 ├── assets/
@@ -205,7 +208,7 @@ row 7  →  1-ша горизонталь   └─ тил білих
 - [ ] Перетворення пішака
 - [x] Правила нічиєї (повторення, 50 ходів, недостатній матеріал)
 - [x] Імпорт/експорт FEN
-- [ ] Тести
+- [x] Тести
 
 <a id="-vnesok"></a>
 ## 🤝 Внесок
@@ -215,6 +218,7 @@ Issues та pull requests вітаються — у [планах](#%EF%B8%8F-pl
 ```bash
 cmake -B build            # налаштування
 cmake --build build       # компіляція (має лишатися без попереджень)
+ctest --test-dir build    # тести (мають лишатися зеленими)
 ./build/chess-engine      # запустити демо
 ```
 
