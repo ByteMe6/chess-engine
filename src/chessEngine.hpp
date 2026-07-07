@@ -38,6 +38,9 @@ public:
     bool gameOver = false;
     std::string castleRights = "KQkq";
     std::array<int, 2> enPassant = {-1, -1};
+    int halfmoveClock = 0;
+    int fullmoveNumber = 1;
+    std::vector<std::string> positionHistory;
 
     Board(PieceColor currColor, std::vector<std::vector<Piece>> board)
         : currColor(currColor), board(board) {}
@@ -264,57 +267,28 @@ public:
         return std::string(1, letter) + std::to_string(number);
     }
 
-    // 'P' for a white pawn, 'p' for a black one
-    char pieceSymbol(const Piece& piece) {
-        char letter = (char)piece.name;
-        return piece.color == "white" ? (char)std::toupper(letter) : (char)std::tolower(letter);
-    }
-
-    void clearBoard() {
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                board[row][col] = Piece(FigureName::Empty, " ", {row, col});
-            }
-        }
-    }
-
-    // one FEN letter -> a piece on the board, uppercase is white
-    void putFenPiece(char symbol, int row, int col) {
-        char name = (char)std::toupper(symbol);
-        bool isRealPiece = std::string("KQRBNP").find(name) != std::string::npos;
-
-        if (!isRealPiece || !isInsideBoard(row, col)) {
-            throw std::invalid_argument("Invalid FEN symbol: " + std::string(1, symbol));
-        }
-
-        PieceColor color = std::isupper(symbol) ? "white" : "black";
-        board[row][col] = Piece((FigureName)name, color, {row, col});
-    }
-
-    std::vector<std::string> splitBySpaces(const std::string& text) {
-        std::vector<std::string> parts;
-        std::string current = "";
-
-        for (int i = 0; i < (int)text.size(); i++) {
-            if (text[i] == ' ') {
-                parts.push_back(current);
-                current = "";
-            } else {
-                current += text[i];
-            }
-        }
-
-        parts.push_back(current);
-        return parts;
-    }
-
     // "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     void loadFen(const std::string& fen) {
-        clearBoard();
+        for (int emptyRow = 0; emptyRow < 8; emptyRow++) {
+            for (int emptyCol = 0; emptyCol < 8; emptyCol++) {
+                board[emptyRow][emptyCol] = Piece(FigureName::Empty, " ", {emptyRow, emptyCol});
+            }
+        }
 
-        std::vector<std::string> fields = splitBySpaces(fen);
+        std::vector<std::string> fields;
+        std::string current = "";
+
+        for (int i = 0; i < (int)fen.size(); i++) {
+            if (fen[i] == ' ') {
+                fields.push_back(current);
+                current = "";
+            } else {
+                current += fen[i];
+            }
+        }
+        fields.push_back(current);
+
         std::string pieces = fields[0];
-
         int row = 0;
         int col = 0;
 
@@ -327,7 +301,14 @@ public:
             } else if (symbol >= '1' && symbol <= '8') {
                 col += symbol - '0'; // a digit skips empty squares
             } else {
-                putFenPiece(symbol, row, col);
+                char name = (char)std::toupper(symbol);
+
+                if (std::string("KQRBNP").find(name) == std::string::npos || !isInsideBoard(row, col)) {
+                    throw std::invalid_argument("Invalid FEN symbol: " + std::string(1, symbol));
+                }
+
+                PieceColor color = std::isupper(symbol) ? "white" : "black";
+                board[row][col] = Piece((FigureName)name, color, {row, col});
                 col++;
             }
         }
@@ -344,47 +325,58 @@ public:
             enPassant = translateCoords(fields[3]);
         }
 
+        halfmoveClock = 0;
+        if (fields.size() > 4 && fields[4] != "-") {
+            halfmoveClock = std::stoi(fields[4]);
+        }
+
+        fullmoveNumber = 1;
+        if (fields.size() > 5 && fields[5] != "-") {
+            fullmoveNumber = std::stoi(fields[5]);
+        }
+
+        positionHistory.clear();
+        positionHistory.push_back(toFen(false));
+
         gameOver = false;
         checkGameOver();
     }
 
-    std::string rowToFen(int row) {
-        std::string result = "";
-        int emptyCount = 0;
-
-        for (int col = 0; col < 8; col++) {
-            const Piece& piece = board[row][col];
-
-            if (piece.name == FigureName::Empty) {
-                emptyCount++;
-                continue;
-            }
-
-            if (emptyCount > 0) {
-                result += std::to_string(emptyCount);
-                emptyCount = 0;
-            }
-
-            result += pieceSymbol(piece);
-        }
-
-        if (emptyCount > 0) result += std::to_string(emptyCount);
-
-        return result;
-    }
-
-    std::string toFen() {
+    std::string toFen(bool withCounters = true) {
         std::string fen = "";
 
         for (int row = 0; row < 8; row++) {
-            fen += rowToFen(row);
+            int emptyCount = 0;
+
+            for (int col = 0; col < 8; col++) {
+                const Piece& piece = board[row][col];
+
+                if (piece.name == FigureName::Empty) {
+                    emptyCount++;
+                    continue;
+                }
+
+                if (emptyCount > 0) {
+                    fen += std::to_string(emptyCount);
+                    emptyCount = 0;
+                }
+
+                char letter = (char)piece.name;
+                fen += piece.color == "white" ? (char)std::toupper(letter) : (char)std::tolower(letter);
+            }
+
+            if (emptyCount > 0) fen += std::to_string(emptyCount);
             if (row < 7) fen += '/';
         }
 
         fen += currColor == "white" ? " w" : " b";
         fen += castleRights == "" ? " -" : " " + castleRights;
         fen += enPassant[0] == -1 ? " -" : " " + translateToNotation(enPassant);
-        fen += " 0 1";
+
+        if (withCounters) {
+            fen += " " + std::to_string(halfmoveClock) + " " + std::to_string(fullmoveNumber);
+        }
+
         return fen;
     }
 
@@ -428,6 +420,7 @@ public:
 
         int fromRow = piece.coords[0];
         int fromCol = piece.coords[1];
+        bool isCapture = board[finalCoords[0]][finalCoords[1]].name != FigureName::Empty || isEnPassantMove(piece, finalCoords);
 
         if (isEnPassantMove(piece, finalCoords)) {
             board[fromRow][finalCoords[1]] = Piece(FigureName::Empty, " ", {fromRow, finalCoords[1]});
@@ -457,7 +450,11 @@ public:
         updateCornerRights({fromRow, fromCol});
         updateCornerRights(finalCoords);
 
+        halfmoveClock = piece.name == FigureName::Pawn || isCapture ? 0 : halfmoveClock + 1;
+        if (piece.color == "black") fullmoveNumber++;
+
         currColor = currColor == "white" ? "black" : "white";
+        positionHistory.push_back(toFen(false));
         checkGameOver();
     }
 
@@ -541,12 +538,43 @@ public:
         return !isInCheck(side) && !hasAnyLegalMove(side);
     }
 
-    // mate or stalemate for the side to move ends the game
+    bool isFiftyMoveRule() {
+        return halfmoveClock >= 100;
+    }
+
+    bool isThreefoldRepetition() {
+        std::string current = toFen(false);
+        int count = 0;
+
+        for (int i = 0; i < (int)positionHistory.size(); i++) {
+            if (positionHistory[i] == current) count++;
+        }
+
+        return count >= 3;
+    }
+
+    bool isInsufficientMaterial() {
+        std::vector<FigureName> pieces;
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                const Piece& piece = board[row][col];
+                if (piece.name != FigureName::Empty && piece.name != FigureName::King) {
+                    pieces.push_back(piece.name);
+                }
+            }
+        }
+
+        if ((int)pieces.size() == 0) return true;
+        if ((int)pieces.size() == 1 && (pieces[0] == FigureName::Bishop || pieces[0] == FigureName::Knight)) return true;
+        return false;
+    }
+
     void checkGameOver() {
         if (isMate(currColor)) {
             gameOver = true;
             std::cout << "Game over: " << (currColor == "white" ? "Black" : "White") << " won" << std::endl;
-        } else if (isStalemate(currColor)) {
+        } else if (isStalemate(currColor) || isInsufficientMaterial() || isThreefoldRepetition() || isFiftyMoveRule()) {
             gameOver = true;
             std::cout << "Game over: draw" << std::endl;
         }
