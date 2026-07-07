@@ -5,9 +5,9 @@
 build/
 .DS_Store
 
-# in-source cmake build artifacts
+# in-source cmake build artifacts (CMakeLists.txt stays tracked)
 CMakeFiles/
 CMakeCache.txt
-cmake_install.cmake
+*.cmake
 Makefile
 /chess-engine
