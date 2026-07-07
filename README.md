@@ -102,7 +102,8 @@ Uppercase = white, lowercase = black. Old-school FEN vibes.
 - ✅ **Move validation** — illegal moves are rejected
 - ✅ **Turn order** — `currColor` tracks whose move it is; moving out of turn is rejected
 - ✅ **Check, checkmate & stalemate** — moves that leave your own king in check are illegal; the game ends with `Game over: White won` or `Game over: draw`
-- ✅ **FEN import/export** — start from any custom position with `loadFen()` or `Board(fen)`, dump the current one with `toFen()`
+- ✅ **Castling & en passant** — full rules: rights are tracked and lost when the king or a rook moves, the e.p. window lasts exactly one move
+- ✅ **FEN import/export** — start from any custom position with `loadFen()` or `Board(fen)`, dump the current one with `toFen()`; castling rights and the e.p. square are real FEN fields
 - ✅ **ASCII board rendering** — with file/rank coordinates
 - ✅ **Clean modern C++17** — `enum class` pieces, structured bindings, an exhaustive `switch` with a defensive `throw`, STL only
 
@@ -190,8 +191,8 @@ row 7  →  rank 1   └─ white's back rank
 - [x] Turn order enforcement
 - [x] Check & checkmate detection
 - [x] Stalemate
-- [ ] Castling
-- [ ] En passant
+- [x] Castling
+- [x] En passant
 - [ ] Pawn promotion
 - [ ] Draw rules (repetition, fifty-move)
 - [x] FEN import/export
