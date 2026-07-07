@@ -4,3 +4,10 @@
 .claude
 build/
 .DS_Store
+
+# in-source cmake build artifacts
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+/chess-engine

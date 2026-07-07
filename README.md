@@ -14,9 +14,9 @@
 
 **English** · [Українська](README.uk.md) · [Русский](README.ru.md)
 
-<img src="assets/board.svg" width="440" alt="Chessboard after 1. e4 e5 2. Nf3, with the knight move highlighted">
+<img src="assets/board.svg" width="440" alt="Final position of the demo game — the white queen has just delivered mate on d7">
 
-*Position after `1. e4 e5 2. Nf3` — exactly what the built-in demo plays.*
+*Final position of the built-in demo — the white queen has just delivered mate on d7.*
 
 </div>
 
@@ -59,7 +59,7 @@ cmake --build build
 ./build/chess-engine
 ```
 
-You'll see the opening `1. e4 e5 2. Nf3` played out, board by board:
+The demo plays a short game that ends in checkmate — watch the last lines:
 
 ```console
 $ ./bin/chess-engine
@@ -76,16 +76,18 @@ $ ./bin/chess-engine
   a b c d e f g h
 
 Pawn e2: [ [ 5, 4 ], [ 4, 4 ] ]
-...
+Game over: White won
+The game is over
+
   a b c d e f g h
-8 r n b q k b n r 8
-7 p p p p   p p p 7
-6                 6
-5         p       5
+8   r   k   b n r 8
+7 p p p Q p p p p 7
+6     B           6
+5       p         5
 4         P       4
-3           N     3
-2 P P P P   P P P 2
-1 R N B Q K B   R 1
+3             P   3
+2 P P P P     P P 2
+1 R N B   K   N R 1
   a b c d e f g h
 ```
 
@@ -98,6 +100,9 @@ Uppercase = white, lowercase = black. Old-school FEN vibes.
 - ✅ **Full pawn logic** — single push, double push from the start rank, diagonal captures only when an enemy is actually there
 - ✅ **Algebraic notation in and out** — `makeMove("e2", "e4")` just works
 - ✅ **Move validation** — illegal moves are rejected
+- ✅ **Turn order** — `currColor` tracks whose move it is; moving out of turn is rejected
+- ✅ **Check, checkmate & stalemate** — moves that leave your own king in check are illegal; the game ends with `Game over: White won` or `Game over: draw`
+- ✅ **FEN import/export** — start from any custom position with `loadFen()` or `Board(fen)`, dump the current one with `toFen()`
 - ✅ **ASCII board rendering** — with file/rank coordinates
 - ✅ **Clean modern C++17** — `enum class` pieces, structured bindings, an exhaustive `switch` with a defensive `throw`, STL only
 
@@ -125,6 +130,10 @@ board.makeMove("g1", "f3");       // illegal moves are simply rejected
 
 Piece knight = board.board[5][5];         // the knight that just landed on f3
 board.getPossibleMoves(knight);           // -> e5 (capture!), g5, d4, h4, g1
+
+// or start from any custom position
+Board endgame("6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1");
+endgame.makeMove("a1", "a8");             // back rank mate -> "Game over: White won"
 ```
 
 ## 📚 API reference
@@ -137,6 +146,11 @@ board.getPossibleMoves(knight);           // -> e5 (capture!), g5, d4, h4, g1
 | `translateCoords` | `std::array<int, 2> translateCoords(const std::string& square)` | `"e2"` → `{6, 4}`; throws on an invalid square |
 | `translateToNotation` | `std::string translateToNotation(std::array<int, 2> coords)` | `{6, 4}` → `"e2"` |
 | `isInsideBoard` | `bool isInsideBoard(int row, int col)` | Bounds check for the 8×8 board |
+| `isInCheck` | `bool isInCheck(PieceColor side)` | Is this side's king under attack right now |
+| `isMate` | `bool isMate(PieceColor side)` | Checkmate: in check and no legal move left |
+| `isStalemate` | `bool isStalemate(PieceColor side)` | Stalemate: not in check, but no legal move either |
+| `loadFen` | `void loadFen(const std::string& fen)` | Loads a position from FEN (also available as the `Board(fen)` constructor) |
+| `toFen` | `std::string toFen()` | The current position as FEN |
 
 ## 🔍 How it works
 
@@ -163,7 +177,7 @@ row 7  →  rank 1   └─ white's back rank
 ```
 ├── src/
 │   ├── chessEngine.hpp   # Board, Piece, move generation — the brains
-│   └── main.cpp          # Demo: set up a board, play 1. e4 e5 2. Nf3
+│   └── main.cpp          # Demo: a short game that ends in checkmate
 ├── bin/
 │   └── chess-engine      # prebuilt binary (macOS universal)
 ├── assets/
@@ -173,13 +187,14 @@ row 7  →  rank 1   └─ white's back rank
 
 ## 🗺️ Roadmap
 
-- [ ] Turn order enforcement
-- [ ] Check & checkmate detection
+- [x] Turn order enforcement
+- [x] Check & checkmate detection
+- [x] Stalemate
 - [ ] Castling
 - [ ] En passant
 - [ ] Pawn promotion
-- [ ] Stalemate & draw rules
-- [ ] FEN import/export
+- [ ] Draw rules (repetition, fifty-move)
+- [x] FEN import/export
 - [ ] Test suite
 
 ## 🤝 Contributing

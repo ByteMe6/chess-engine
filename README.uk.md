@@ -14,9 +14,9 @@
 
 [English](README.md) · **Українська** · [Русский](README.ru.md)
 
-<img src="assets/board.svg" width="440" alt="Шахівниця після 1. e4 e5 2. Nf3 з підсвіченим ходом коня">
+<img src="assets/board.svg" width="440" alt="Фінальна позиція демо-партії — білий ферзь щойно поставив мат на d7">
 
-*Позиція після `1. e4 e5 2. Nf3` — саме її розігрує вбудоване демо.*
+*Фінальна позиція вбудованого демо — білий ферзь щойно поставив мат на d7.*
 
 </div>
 
@@ -61,7 +61,7 @@ cmake --build build
 ./build/chess-engine
 ```
 
-Ви побачите, як розігрується дебют `1. e4 e5 2. Nf3`, дошка за дошкою:
+Демо розігрує коротку партію, що завершується матом — дивіться на останні рядки:
 
 ```console
 $ ./bin/chess-engine
@@ -78,16 +78,18 @@ $ ./bin/chess-engine
   a b c d e f g h
 
 Pawn e2: [ [ 5, 4 ], [ 4, 4 ] ]
-...
+Game over: White won
+The game is over
+
   a b c d e f g h
-8 r n b q k b n r 8
-7 p p p p   p p p 7
-6                 6
-5         p       5
+8   r   k   b n r 8
+7 p p p Q p p p p 7
+6     B           6
+5       p         5
 4         P       4
-3           N     3
-2 P P P P   P P P 2
-1 R N B Q K B   R 1
+3             P   3
+2 P P P P     P P 2
+1 R N B   K   N R 1
   a b c d e f g h
 ```
 
@@ -101,6 +103,9 @@ Pawn e2: [ [ 5, 4 ], [ 4, 4 ] ]
 - ✅ **Повна логіка пішака** — хід на одну клітинку, на дві з початкової горизонталі, взяття по діагоналі лише тоді, коли там справді стоїть ворог
 - ✅ **Шахова нотація на вхід і вихід** — `makeMove("e2", "e4")` просто працює
 - ✅ **Валідація ходів** — нелегальні ходи відхиляються
+- ✅ **Черговість ходів** — `currColor` пам'ятає, чий хід; хід не у свою чергу відхиляється
+- ✅ **Шах, мат і пат** — ходи, що залишають власного короля під шахом, нелегальні; партія завершується `Game over: White won` або `Game over: draw`
+- ✅ **Імпорт/експорт FEN** — стартуйте з будь-якої позиції через `loadFen()` чи `Board(fen)`, вивантажуйте поточну через `toFen()`
 - ✅ **ASCII-відображення дошки** — з координатами
 - ✅ **Чистий сучасний C++17** — фігури як `enum class`, structured bindings, вичерпний `switch` із захисним `throw`, тільки STL
 
@@ -129,6 +134,10 @@ board.makeMove("g1", "f3");       // нелегальні ходи просто 
 
 Piece knight = board.board[5][5];         // кінь, що щойно став на f3
 board.getPossibleMoves(knight);           // -> e5 (взяття!), g5, d4, h4, g1
+
+// або стартуємо з будь-якої позиції
+Board endgame("6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1");
+endgame.makeMove("a1", "a8");             // мат по останній горизонталі -> "Game over: White won"
 ```
 
 <a id="-dovidnyk-api"></a>
@@ -142,6 +151,11 @@ board.getPossibleMoves(knight);           // -> e5 (взяття!), g5, d4, h4, 
 | `translateCoords` | `std::array<int, 2> translateCoords(const std::string& square)` | `"e2"` → `{6, 4}`; кидає виняток на некоректній клітинці |
 | `translateToNotation` | `std::string translateToNotation(std::array<int, 2> coords)` | `{6, 4}` → `"e2"` |
 | `isInsideBoard` | `bool isInsideBoard(int row, int col)` | Перевірка меж дошки 8×8 |
+| `isInCheck` | `bool isInCheck(PieceColor side)` | Чи під боєм король цієї сторони просто зараз |
+| `isMate` | `bool isMate(PieceColor side)` | Мат: шах і жодного легального ходу |
+| `isStalemate` | `bool isStalemate(PieceColor side)` | Пат: шаху немає, але й легальних ходів немає |
+| `loadFen` | `void loadFen(const std::string& fen)` | Завантажує позицію з FEN (є і конструктор `Board(fen)`) |
+| `toFen` | `std::string toFen()` | Поточна позиція у форматі FEN |
 
 <a id="-yak-tse-pratsiuie"></a>
 ## 🔍 Як це працює
@@ -170,7 +184,7 @@ row 7  →  1-ша горизонталь   └─ тил білих
 ```
 ├── src/
 │   ├── chessEngine.hpp   # Board, Piece, генерація ходів — мозок проєкту
-│   └── main.cpp          # Демо: створює дошку і грає 1. e4 e5 2. Nf3
+│   └── main.cpp          # Демо: коротка партія до мату
 ├── bin/
 │   └── chess-engine      # зібраний бінарник (macOS universal)
 ├── assets/
@@ -181,13 +195,14 @@ row 7  →  1-ша горизонталь   └─ тил білих
 <a id="-plany"></a>
 ## 🗺️ Плани
 
-- [ ] Контроль черговості ходів
-- [ ] Шах і мат
+- [x] Контроль черговості ходів
+- [x] Шах і мат
+- [x] Пат
 - [ ] Рокіровка
 - [ ] Взяття на проході
 - [ ] Перетворення пішака
-- [ ] Пат і правила нічиєї
-- [ ] Імпорт/експорт FEN
+- [ ] Правила нічиєї (повторення, 50 ходів)
+- [x] Імпорт/експорт FEN
 - [ ] Тести
 
 <a id="-vnesok"></a>

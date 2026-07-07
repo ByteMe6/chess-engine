@@ -16,21 +16,55 @@ int main() {
 
     board.printBoard();
 
-    std::vector<std::array<int, 2>> pawnMoves = board.getPossibleMoves(board.board[6][4]);
-    std::string movesText = "[";
-    for (int i = 0; i < (int)pawnMoves.size(); i++) {
-        movesText += " [ " + std::to_string(pawnMoves[i][0]) + ", " + std::to_string(pawnMoves[i][1]) + " ]";
-        if (i < (int)pawnMoves.size() - 1) movesText += ",";
-    }
-    movesText += " ]";
-    std::cout << "Pawn e2: " << movesText << std::endl;
+    // std::vector<std::array<int, 2>> pawnMoves = board.getPossibleMoves(board.board[6][4]);
+    // std::string movesText = "[";
+    // for (int i = 0; i < (int)pawnMoves.size(); i++) {
+    //     movesText += " [ " + std::to_string(pawnMoves[i][0]) + ", " + std::to_string(pawnMoves[i][1]) + " ]";
+    //     if (i < (int)pawnMoves.size() - 1) movesText += ",";
+    // }
+    // movesText += " ]";
 
-    board.makeMove("e2", "e4");
+    // std::cout << "Pawn e2: " << movesText << std::endl;
 
-    board.printBoard();
+    // board.makeMove("e2", "e4");
+    // board.makeMove("d7", "d5");
+    // board.makeMove("g1", "f3");
+    // board.makeMove("c8", "h3");
+    // board.makeMove("f3", "g5");
+    // board.makeMove("d8", "d6");
+    // board.makeMove("g5", "h3");
 
-    board.makeMove("e7", "e5");
-    board.makeMove("g1", "f3");
+    // board.makeMove("h3", "g5"); // not working
+
+    // board.makeMove("d6", "g3");
+    // board.makeMove("f2", "g3");
+    // board.makeMove("b8", "c6");
+    // board.makeMove("h3", "g1");
+    // board.makeMove("c6", "d8");
+    // board.makeMove("f1", "b5");
+    // board.makeMove("d8", "c6");
+    // board.makeMove("b5", "c6");
+    // board.makeMove("e8", "d8");
+    // board.makeMove("d1", "g4");
+    // board.makeMove("a8", "b8");
+
+    // board.printBoard();
+
+    // draw {
+    // board.makeMove("b1", "c3");
+    // board.makeMove("b8", "c8");
+    // board.makeMove("b2", "b3");
+
+    // }
+
+    // mate {
+    // board.makeMove("g4", "d7");
+    // }
+
+    // board.makeMove("d8", "c8"); // not possible, mate
+
+    board.loadFen("7k/5Q2/6K1/8/8/8/8/8 b - - 0 1");
+    board.loadFen("r1bqkb1r/pppp1Qpp/n4n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4");
 
     board.printBoard();
 
