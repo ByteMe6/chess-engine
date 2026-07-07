@@ -1,0 +1,19 @@
+{
+  "name": "chess-engine",
+  "version": "0.0.1",
+  "description": "Simple chess enginge written on TypeScript",
+  "license": "GPL-3.0-only",
+  "author": "",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "test",
+    "start": "npx tsx src/index.ts"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "tsx": "^4.23.0"
+  }
+}

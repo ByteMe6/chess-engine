@@ -1,0 +1,5 @@
+.env
+*.rb
+*.ru
+node_modules
+build/
