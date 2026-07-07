@@ -226,67 +226,95 @@ public:
         return std::string(1, letter) + std::to_string(number);
     }
 
-    void loadFen(const std::string& fen) {
+    // 'P' for a white pawn, 'p' for a black one
+    char pieceSymbol(const Piece& piece) {
+        char letter = (char)piece.name;
+        return piece.color == "white" ? (char)std::toupper(letter) : (char)std::tolower(letter);
+    }
+
+    void clearBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 board[row][col] = Piece(FigureName::Empty, " ", {row, col});
             }
         }
+    }
+
+    // one FEN letter -> a piece on the board, uppercase is white
+    void putFenPiece(char symbol, int row, int col) {
+        char name = (char)std::toupper(symbol);
+        bool isRealPiece = std::string("KQRBNP").find(name) != std::string::npos;
+
+        if (!isRealPiece || !isInsideBoard(row, col)) {
+            throw std::invalid_argument("Invalid FEN symbol: " + std::string(1, symbol));
+        }
+
+        PieceColor color = std::isupper(symbol) ? "white" : "black";
+        board[row][col] = Piece((FigureName)name, color, {row, col});
+    }
+
+    // "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    void loadFen(const std::string& fen) {
+        clearBoard();
 
         int row = 0;
         int col = 0;
-        int i = 0;
 
-        for (; i < (int)fen.size() && fen[i] != ' '; i++) {
+        for (int i = 0; i < (int)fen.size(); i++) {
             char symbol = fen[i];
+
+            if (symbol == ' ') break; // the pieces are done
 
             if (symbol == '/') {
                 row++;
                 col = 0;
             } else if (symbol >= '1' && symbol <= '8') {
-                col += symbol - '0';
+                col += symbol - '0'; // a digit skips empty squares
             } else {
-                char name = (char)std::toupper(symbol);
-
-                if (std::string("KQRBNP").find(name) == std::string::npos || !isInsideBoard(row, col)) {
-                    throw std::invalid_argument("Invalid FEN: " + fen);
-                }
-
-                PieceColor color = std::isupper(symbol) ? "white" : "black";
-                board[row][col] = Piece((FigureName)name, color, {row, col});
+                putFenPiece(symbol, row, col);
                 col++;
             }
         }
 
-        currColor = (i + 1 < (int)fen.size() && fen[i + 1] == 'b') ? "black" : "white";
+        // "w" or "b" right after the first space
+        int spacePos = (int)fen.find(' ');
+        currColor = spacePos != -1 && fen[spacePos + 1] == 'b' ? "black" : "white";
 
         gameOver = false;
         checkGameOver();
     }
 
+    std::string rowToFen(int row) {
+        std::string result = "";
+        int emptyCount = 0;
+
+        for (int col = 0; col < 8; col++) {
+            const Piece& piece = board[row][col];
+
+            if (piece.name == FigureName::Empty) {
+                emptyCount++;
+                continue;
+            }
+
+            if (emptyCount > 0) {
+                result += std::to_string(emptyCount);
+                emptyCount = 0;
+            }
+
+            result += pieceSymbol(piece);
+        }
+
+        if (emptyCount > 0) result += std::to_string(emptyCount);
+
+        return result;
+    }
+
+    // no castling and en passant tracking, so those fields are always "-"
     std::string toFen() {
         std::string fen = "";
 
         for (int row = 0; row < 8; row++) {
-            int emptyCount = 0;
-
-            for (int col = 0; col < 8; col++) {
-                const Piece& piece = board[row][col];
-
-                if (piece.name == FigureName::Empty) {
-                    emptyCount++;
-                    continue;
-                }
-
-                if (emptyCount > 0) {
-                    fen += std::to_string(emptyCount);
-                    emptyCount = 0;
-                }
-
-                fen += piece.color == "white" ? (char)std::toupper((char)piece.name) : (char)std::tolower((char)piece.name);
-            }
-
-            if (emptyCount > 0) fen += std::to_string(emptyCount);
+            fen += rowToFen(row);
             if (row < 7) fen += '/';
         }
 
