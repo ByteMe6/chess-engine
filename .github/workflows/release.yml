@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.artifact }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: chess-engine-linux-x86_64
+          - os: ubuntu-24.04-arm
+            artifact: chess-engine-linux-arm64
+          - os: macos-latest
+            artifact: chess-engine-macos-universal
+            cmake_args: '"-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"'
+          - os: windows-latest
+            artifact: chess-engine-windows-x86_64.exe
+          - os: windows-11-arm
+            artifact: chess-engine-windows-arm64.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Smoke test (Unix)
+        if: runner.os != 'Windows'
+        run: ./build/chess-engine
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        run: ./build/Release/chess-engine.exe
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        run: cp build/chess-engine "${{ matrix.artifact }}"
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: Copy-Item build/Release/chess-engine.exe "${{ matrix.artifact }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: chess-engine-*
+          generate_release_notes: true

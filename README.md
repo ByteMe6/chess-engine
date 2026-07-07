@@ -6,6 +6,7 @@
 
 [![C++17](https://img.shields.io/badge/C%2B%2B17-00599C?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/17)
 [![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=white)](CMakeLists.txt)
+[![Release](https://img.shields.io/github/v/release/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine/releases/latest)
 [![Dependencies: STL only](https://img.shields.io/badge/dependencies-STL%20only-brightgreen)](src/chessEngine.hpp)
 [![Code size](https://img.shields.io/github/languages/code-size/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-green)](LICENSE)
@@ -42,7 +43,7 @@ It's a learning project first: the code is written to be read. If you ever wonde
 
 ## 🚀 Quick start
 
-**Prebuilt binary** (macOS arm64 / Apple Silicon):
+**Prebuilt binaries** — grab one from the [releases page](https://github.com/ByteMe6/chess-engine/releases/latest): Linux (x86_64 / arm64), Windows (x86_64 / arm64), macOS (universal). The repo also ships one at `bin/chess-engine` (macOS universal — Apple Silicon & Intel):
 
 ```bash
 git clone git@github.com:ByteMe6/chess-engine.git
@@ -164,7 +165,7 @@ row 7  →  rank 1   └─ white's back rank
 │   ├── chessEngine.hpp   # Board, Piece, move generation — the brains
 │   └── main.cpp          # Demo: set up a board, play 1. e4 e5 2. Nf3
 ├── bin/
-│   └── chess-engine      # prebuilt binary (macOS arm64)
+│   └── chess-engine      # prebuilt binary (macOS universal)
 ├── assets/
 │   └── board.svg         # the board diagram above
 └── CMakeLists.txt

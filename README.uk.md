@@ -6,6 +6,7 @@
 
 [![C++17](https://img.shields.io/badge/C%2B%2B17-00599C?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/17)
 [![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=white)](CMakeLists.txt)
+[![Release](https://img.shields.io/github/v/release/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine/releases/latest)
 [![Dependencies: STL only](https://img.shields.io/badge/dependencies-STL%20only-brightgreen)](src/chessEngine.hpp)
 [![Code size](https://img.shields.io/github/languages/code-size/ByteMe6/chess-engine)](https://github.com/ByteMe6/chess-engine)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-green)](LICENSE)
@@ -44,7 +45,7 @@
 <a id="-shvydkyi-start"></a>
 ## 🚀 Швидкий старт
 
-**Готовий бінарник** (macOS arm64 / Apple Silicon):
+**Готові бінарники** — беріть на [сторінці релізів](https://github.com/ByteMe6/chess-engine/releases/latest): Linux (x86_64 / arm64), Windows (x86_64 / arm64), macOS (universal). У репозиторії теж лежить один — `bin/chess-engine` (macOS universal — Apple Silicon та Intel):
 
 ```bash
 git clone git@github.com:ByteMe6/chess-engine.git
@@ -171,7 +172,7 @@ row 7  →  1-ша горизонталь   └─ тил білих
 │   ├── chessEngine.hpp   # Board, Piece, генерація ходів — мозок проєкту
 │   └── main.cpp          # Демо: створює дошку і грає 1. e4 e5 2. Nf3
 ├── bin/
-│   └── chess-engine      # зібраний бінарник (macOS arm64)
+│   └── chess-engine      # зібраний бінарник (macOS universal)
 ├── assets/
 │   └── board.svg         # діаграма дошки вище
 └── CMakeLists.txt
