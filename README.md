@@ -105,7 +105,7 @@ The whole engine is a single header. Pick your flavor, then just `#include <ches
 include(FetchContent)
 FetchContent_Declare(chess-engine
     GIT_REPOSITORY https://github.com/ByteMe6/chess-engine.git
-    GIT_TAG v1.0.0)
+    GIT_TAG v1.1.0)
 FetchContent_MakeAvailable(chess-engine)
 
 target_link_libraries(your-app PRIVATE chess-engine::chessEngine)
@@ -127,7 +127,7 @@ conan create .
 ```ini
 # then in your project's conanfile.txt
 [requires]
-chess-engine/1.0.0
+chess-engine/1.1.0
 ```
 
 ## 🧠 Features

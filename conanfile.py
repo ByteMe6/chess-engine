@@ -6,7 +6,7 @@ from conan.tools.files import copy
 
 class ChessEngineConan(ConanFile):
     name = "chess-engine"
-    version = "1.0.0"
+    version = "1.1.0"
     license = "GPL-3.0-only"
     url = "https://github.com/ByteMe6/chess-engine"
     homepage = "https://github.com/ByteMe6/chess-engine"

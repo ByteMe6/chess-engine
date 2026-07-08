@@ -108,7 +108,7 @@ The game is over
 include(FetchContent)
 FetchContent_Declare(chess-engine
     GIT_REPOSITORY https://github.com/ByteMe6/chess-engine.git
-    GIT_TAG v1.0.0)
+    GIT_TAG v1.1.0)
 FetchContent_MakeAvailable(chess-engine)
 
 target_link_libraries(your-app PRIVATE chess-engine::chessEngine)
@@ -130,7 +130,7 @@ conan create .
 ```ini
 # далі у conanfile.txt твого проєкту
 [requires]
-chess-engine/1.0.0
+chess-engine/1.1.0
 ```
 
 <a id="-mozhlyvosti"></a>
