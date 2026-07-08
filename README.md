@@ -27,6 +27,7 @@
 
 - [What is this?](#-what-is-this)
 - [Quick start](#-quick-start)
+- [Use as a library](#-use-as-a-library)
 - [Features](#-features)
 - [Usage](#-usage)
 - [API reference](#-api-reference)
@@ -93,6 +94,41 @@ The game is over
 ```
 
 Uppercase = white, lowercase = black. Old-school FEN vibes.
+
+## 📦 Use as a library
+
+The whole engine is a single header. Pick your flavor, then just `#include <chessEngine.hpp>`.
+
+**CMake FetchContent** — for minimalists, no package manager at all:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(chess-engine
+    GIT_REPOSITORY https://github.com/ByteMe6/chess-engine.git
+    GIT_TAG v1.0.0)
+FetchContent_MakeAvailable(chess-engine)
+
+target_link_libraries(your-app PRIVATE chess-engine::chessEngine)
+```
+
+**vcpkg** — the repo ships an [overlay port](ports/chess-engine):
+
+```bash
+git clone https://github.com/ByteMe6/chess-engine.git
+vcpkg install chess-engine --overlay-ports=chess-engine/ports
+```
+
+**Conan** — from a clone of this repo:
+
+```bash
+conan create .
+```
+
+```ini
+# then in your project's conanfile.txt
+[requires]
+chess-engine/1.0.0
+```
 
 ## 🧠 Features
 
@@ -192,7 +228,10 @@ row 7  →  rank 1   └─ white's back rank
 │   └── chess-engine      # prebuilt binary (macOS universal)
 ├── assets/
 │   └── board.svg         # the board diagram above
-└── CMakeLists.txt
+├── ports/
+│   └── chess-engine/     # vcpkg overlay port
+├── conanfile.py          # Conan package
+└── CMakeLists.txt        # demo + tests + chess-engine::chessEngine library target
 ```
 
 ## 🗺️ Roadmap

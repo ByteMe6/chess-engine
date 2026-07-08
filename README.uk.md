@@ -27,6 +27,7 @@
 
 - [Що це?](#-shcho-tse)
 - [Швидкий старт](#-shvydkyi-start)
+- [Як підключити бібліотекою](#-yak-pidkliuchyty)
 - [Можливості](#-mozhlyvosti)
 - [Використання](#-vykorystannia)
 - [Довідник API](#-dovidnyk-api)
@@ -95,6 +96,42 @@ The game is over
 ```
 
 Великі літери — білі, малі — чорні. Олдскульний FEN-вайб.
+
+<a id="-yak-pidkliuchyty"></a>
+## 📦 Як підключити бібліотекою
+
+Весь рушій — один заголовковий файл. Обери свій варіант і просто `#include <chessEngine.hpp>`.
+
+**CMake FetchContent** — для мінімалістів, без пакетного менеджера:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(chess-engine
+    GIT_REPOSITORY https://github.com/ByteMe6/chess-engine.git
+    GIT_TAG v1.0.0)
+FetchContent_MakeAvailable(chess-engine)
+
+target_link_libraries(your-app PRIVATE chess-engine::chessEngine)
+```
+
+**vcpkg** — у репозиторії є [overlay-порт](ports/chess-engine):
+
+```bash
+git clone https://github.com/ByteMe6/chess-engine.git
+vcpkg install chess-engine --overlay-ports=chess-engine/ports
+```
+
+**Conan** — з клону цього репозиторію:
+
+```bash
+conan create .
+```
+
+```ini
+# далі у conanfile.txt твого проєкту
+[requires]
+chess-engine/1.0.0
+```
 
 <a id="-mozhlyvosti"></a>
 ## 🧠 Можливості
@@ -199,7 +236,10 @@ row 7  →  1-ша горизонталь   └─ тил білих
 │   └── chess-engine      # зібраний бінарник (macOS universal)
 ├── assets/
 │   └── board.svg         # діаграма дошки вище
-└── CMakeLists.txt
+├── ports/
+│   └── chess-engine/     # overlay-порт для vcpkg
+├── conanfile.py          # пакет Conan
+└── CMakeLists.txt        # демо + тести + бібліотека chess-engine::chessEngine
 ```
 
 <a id="-plany"></a>
