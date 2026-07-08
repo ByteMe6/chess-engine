@@ -65,6 +65,7 @@ int main() {
 
     board.loadFen("7k/5Q2/6K1/8/8/8/8/8 b - - 0 1");
     board.loadFen("r1bqkb1r/pppp1Qpp/n4n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4");
+    board.loadFen("8/1P6/8/7k/8/4K3/8/6n1 w - - 0 1");
 
     board.printBoard();
 

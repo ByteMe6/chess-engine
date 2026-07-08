@@ -7,5 +7,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(chess-engine src/main.cpp)
 
 enable_testing()
-add_executable(tests tests/tests.cpp)
-add_test(NAME tests COMMAND tests)
+add_executable(chess-tests tests/tests.cpp)
+add_test(NAME tests COMMAND chess-tests)

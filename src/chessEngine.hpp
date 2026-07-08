@@ -41,6 +41,7 @@ public:
     int halfmoveClock = 0;
     int fullmoveNumber = 1;
     std::vector<std::string> positionHistory;
+    std::array<int, 2> promotionPending = {-1, -1};
 
     Board(PieceColor currColor, std::vector<std::vector<Piece>> board)
         : currColor(currColor), board(board) {}
@@ -338,6 +339,7 @@ public:
         positionHistory.clear();
         positionHistory.push_back(toFen(false));
 
+        promotionPending = {-1, -1};
         gameOver = false;
         checkGameOver();
     }
@@ -379,6 +381,8 @@ public:
 
         return fen;
     }
+
+    // Castling
 
     void removeCastleRight(char right) {
         int pos = (int)castleRights.find(right);
@@ -454,6 +458,31 @@ public:
         if (piece.color == "black") fullmoveNumber++;
 
         currColor = currColor == "white" ? "black" : "white";
+
+        if (piece.name == FigureName::Pawn && (finalCoords[0] == 0 || finalCoords[0] == 7)) {
+            promotionPending = finalCoords;
+            return;
+        }
+
+        positionHistory.push_back(toFen(false));
+        checkGameOver();
+    }
+
+    void promote(FigureName name) {
+        if (promotionPending[0] == -1) {
+            std::cout << "Nothing to promote" << std::endl;
+            return;
+        }
+
+        if (name != FigureName::Queen && name != FigureName::Rook && name != FigureName::Bishop && name != FigureName::Knight) {
+            std::cout << "A pawn can't become that" << std::endl;
+            return;
+        }
+
+        PieceColor color = board[promotionPending[0]][promotionPending[1]].color;
+        board[promotionPending[0]][promotionPending[1]] = Piece(name, color, promotionPending);
+        promotionPending = {-1, -1};
+
         positionHistory.push_back(toFen(false));
         checkGameOver();
     }
@@ -553,7 +582,7 @@ public:
         return count >= 3;
     }
 
-    bool isInsufficientMaterial() {
+    bool isNotMaterial() {
         std::vector<FigureName> pieces;
 
         for (int row = 0; row < 8; row++) {
@@ -574,14 +603,31 @@ public:
         if (isMate(currColor)) {
             gameOver = true;
             std::cout << "Game over: " << (currColor == "white" ? "Black" : "White") << " won" << std::endl;
-        } else if (isStalemate(currColor) || isInsufficientMaterial() || isThreefoldRepetition() || isFiftyMoveRule()) {
+        } else if (isStalemate(currColor) || isNotMaterial() || isThreefoldRepetition() || isFiftyMoveRule()) {
             gameOver = true;
             std::cout << "Game over: draw" << std::endl;
         }
     }
 
+    bool isPawnLastLine(std::string color) {
+        int lastRow = color == "white" ? 0 : 7;
+
+        for (int col = 0; col < 8; col++) {
+            const Piece& piece = board[lastRow][col];
+            if (piece.name == FigureName::Pawn && piece.color == color) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // takes a move in chess notation like ("e2", "e4") and applies it on the board
     void makeMove(const std::string& from, const std::string& to) {
+        if (promotionPending[0] != -1) {
+            promote(FigureName::Queen);
+        }
+
         if (gameOver) {
             std::cout << "The game is over" << std::endl;
             return;

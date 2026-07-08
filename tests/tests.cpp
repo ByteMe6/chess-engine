@@ -154,6 +154,31 @@ int main() {
     b22.loadFen("8/8/8/4k3/8/8/8/4KQ2 w - - 0 1");
     check("fen: loadFen resets the board", b22.toFen(), "8/8/8/4k3/8/8/8/4KQ2 w - - 0 1");
 
+    Board b23("8/P7/8/8/8/4k3/8/4K3 w - - 0 1");
+    b23.makeMove("a7", "a8");
+    b23.makeMove("e3", "d3");
+    check("promotion: queen by default on the next move", b23.toFen(), "Q7/8/8/8/8/3k4/8/4K3 w - - 1 2");
+
+    Board b24("8/P7/8/8/8/4k3/6p1/4K3 w - - 0 1");
+    b24.makeMove("a7", "a8");
+    b24.promote(FigureName::Knight);
+    b24.makeMove("e3", "d3");
+    check("promotion: explicit knight", b24.toFen(), "N7/8/8/8/8/3k4/6p1/4K3 w - - 1 2");
+
+    Board b25("r3k3/1P6/8/8/8/8/8/4K3 w q - 0 1");
+    b25.makeMove("b7", "a8");
+    b25.promote(FigureName::Queen);
+    check("promotion: capture into promotion kills the castle right", b25.toFen(), "Q3k3/8/8/8/8/8/8/4K3 b - - 0 1");
+
+    Board b26(startFen);
+    b26.promote(FigureName::Knight);
+    check("promotion: nothing pending is rejected", b26.toFen(), startFen);
+
+    Board b27("4k3/8/8/8/8/8/p7/4K3 b - - 0 1");
+    b27.makeMove("a2", "a1");
+    b27.promote(FigureName::Rook);
+    check("promotion: black promotes to a rook", b27.toFen(), "4k3/8/8/8/8/8/8/r3K3 w - - 0 2");
+
     if (failedCount == 0) {
         std::cout << "\nAll tests passed" << std::endl;
     } else {

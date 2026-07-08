@@ -105,6 +105,7 @@ Uppercase = white, lowercase = black. Old-school FEN vibes.
 - ✅ **Check, checkmate & stalemate** — moves that leave your own king in check are illegal; the game ends with `Game over: White won` or `Game over: draw`
 - ✅ **Castling & en passant** — full rules: rights are tracked and lost when the king or a rook moves, the e.p. window lasts exactly one move
 - ✅ **Draw rules** — the fifty-move rule, threefold repetition and insufficient material all end the game with `Game over: draw`
+- ✅ **Pawn promotion** — a pawn on the last rank becomes whatever you pass to `promote()`; keep playing without it and it's a queen by default
 - ✅ **FEN import/export** — start from any custom position with `loadFen()` or `Board(fen)`, dump the current one with `toFen()`; castling rights and the e.p. square are real FEN fields
 - ✅ **ASCII board rendering** — with file/rank coordinates
 - ✅ **Clean modern C++17** — `enum class` pieces, structured bindings, an exhaustive `switch` with a defensive `throw`, STL only
@@ -137,6 +138,9 @@ board.getPossibleMoves(knight);           // -> e5 (capture!), g5, d4, h4, g1
 // or start from any custom position
 Board endgame("6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1");
 endgame.makeMove("a1", "a8");             // back rank mate -> "Game over: White won"
+
+board.makeMove("a7", "a8");               // pawn reaches the last rank...
+board.promote(FigureName::Knight);        // ...pick a piece, or skip for a queen
 ```
 
 ## 📚 API reference
@@ -152,6 +156,7 @@ endgame.makeMove("a1", "a8");             // back rank mate -> "Game over: White
 | `isInCheck` | `bool isInCheck(PieceColor side)` | Is this side's king under attack right now |
 | `isMate` | `bool isMate(PieceColor side)` | Checkmate: in check and no legal move left |
 | `isStalemate` | `bool isStalemate(PieceColor side)` | Stalemate: not in check, but no legal move either |
+| `promote` | `void promote(FigureName name)` | Picks the piece for a pending promotion; skip it and the pawn queens on the next move |
 | `loadFen` | `void loadFen(const std::string& fen)` | Loads a position from FEN (also available as the `Board(fen)` constructor) |
 | `toFen` | `std::string toFen()` | The current position as FEN |
 
@@ -197,7 +202,7 @@ row 7  →  rank 1   └─ white's back rank
 - [x] Stalemate
 - [x] Castling
 - [x] En passant
-- [ ] Pawn promotion
+- [x] Pawn promotion
 - [x] Draw rules (repetition, fifty-move, insufficient material)
 - [x] FEN import/export
 - [x] Test suite
