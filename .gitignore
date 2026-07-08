@@ -9,6 +9,7 @@ build/
 CMakeFiles/
 CMakeCache.txt
 *.cmake
+!ports/**/*.cmake
 Makefile
 /chess-engine
 /chess-tests
