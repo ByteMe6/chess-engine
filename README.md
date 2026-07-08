@@ -140,6 +140,7 @@ chess-engine/1.0.0
 - ✅ **Turn order** — `currColor` tracks whose move it is; moving out of turn is rejected
 - ✅ **Check, checkmate & stalemate** — moves that leave your own king in check are illegal; the game ends with `Game over: White won` or `Game over: draw`
 - ✅ **Castling & en passant** — full rules: rights are tracked and lost when the king or a rook moves, the e.p. window lasts exactly one move
+- ✅ **Chess960 castling** — king and rooks can start anywhere on the back rank; castle by playing king-takes-own-rook, Shredder-FEN rights (`HAha`) supported
 - ✅ **Draw rules** — the fifty-move rule, threefold repetition and insufficient material all end the game with `Game over: draw`
 - ✅ **Pawn promotion** — a pawn on the last rank becomes whatever you pass to `promote()`; keep playing without it and it's a queen by default
 - ✅ **FEN import/export** — start from any custom position with `loadFen()` or `Board(fen)`, dump the current one with `toFen()`; castling rights and the e.p. square are real FEN fields
@@ -244,6 +245,7 @@ row 7  →  rank 1   └─ white's back rank
 - [x] Pawn promotion
 - [x] Draw rules (repetition, fifty-move, insufficient material)
 - [x] FEN import/export
+- [x] Chess960 (Fischer random) castling
 - [x] Test suite
 
 ## 🤝 Contributing

@@ -63,14 +63,15 @@ int main() {
 
     // board.makeMove("d8", "c8"); // not possible, mate
 
-    board.loadFen("7k/5Q2/6K1/8/8/8/8/8 b - - 0 1");
-    board.loadFen("r1bqkb1r/pppp1Qpp/n4n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4");
-    board.loadFen("8/1P6/8/7k/8/4K3/8/6n1 w - - 0 1");
-    
-    board.makeMove("b7", "b8");
-    board.promote(FigureName::Rook);
+    // board.loadFen("7k/5Q2/6K1/8/8/8/8/8 b - - 0 1");
+    // board.loadFen("r1bqkb1r/pppp1Qpp/n4n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4");
+    // board.loadFen("8/1P6/8/7k/8/4K3/8/6n1 w - - 0 1");
+    board.loadFen("2k1r2b/p2p3R/6p1/2P1p3/8/1bP1Q3/1N4q1/B1K5 w k - 1 23");
 
-    board.makeMove("g1", "e2");
+    // board.makeMove("b7", "b8");
+    // board.promote(FigureName::Rook);
+
+    // board.makeMove("g1", "e2");
 
 
     board.printBoard();

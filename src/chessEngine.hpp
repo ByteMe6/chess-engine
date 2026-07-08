@@ -36,7 +36,7 @@ public:
     PieceColor currColor;
     std::vector<std::vector<Piece>> board;
     bool gameOver = false;
-    std::string castleRights = "KQkq";
+    std::string castleRights = "HAha";
     std::array<int, 2> enPassant = {-1, -1};
     int halfmoveClock = 0;
     int fullmoveNumber = 1;
@@ -101,27 +101,54 @@ public:
         }
     }
 
+    bool isCastlingPathClear(int row, int kingCol, int rookCol, int kingTarget, int rookTarget, PieceColor enemyColor) {
+        if (kingTarget != kingCol) {
+            int kingStep = kingTarget > kingCol ? 1 : -1;
+            for (int col = kingCol + kingStep; ; col += kingStep) {
+                if (isSquareAttacked(row, col, enemyColor)) return false;
+                if (col != rookCol && board[row][col].name != FigureName::Empty) return false;
+                if (col == kingTarget) break;
+            }
+        }
+
+        if (rookTarget != rookCol) {
+            int rookStep = rookTarget > rookCol ? 1 : -1;
+            for (int col = rookCol + rookStep; ; col += rookStep) {
+                if (col != kingCol && board[row][col].name != FigureName::Empty) return false;
+                if (col == rookTarget) break;
+            }
+        }
+
+        return true;
+    }
+
     void addCastlingMoves(const Piece& piece, std::vector<std::array<int, 2>>& possibleMoves) {
         int row = piece.color == "white" ? 7 : 0;
-        char kingSideRight = piece.color == "white" ? 'K' : 'k';
-        char queenSideRight = piece.color == "white" ? 'Q' : 'q';
         PieceColor enemyColor = piece.color == "white" ? "black" : "white";
+        int kingCol = piece.coords[1];
+        char base = piece.color == "white" ? 'A' : 'a';
 
-        if (piece.coords[0] != row || piece.coords[1] != 4) return;
-        if (isSquareAttacked(row, 4, enemyColor)) return;
+        if (piece.coords[0] != row) return;
+        if (isSquareAttacked(row, kingCol, enemyColor)) return;
 
-        bool canKingSide = castleRights.find(kingSideRight) != std::string::npos
-            && board[row][7].name == FigureName::Rook && board[row][7].color == piece.color
-            && board[row][5].name == FigureName::Empty && board[row][6].name == FigureName::Empty
-            && !isSquareAttacked(row, 5, enemyColor) && !isSquareAttacked(row, 6, enemyColor);
+        for (int i = 0; i < (int)castleRights.size(); i++) {
+            char right = castleRights[i];
+            if (right < base || right > (char)(base + 7)) continue;
 
-        bool canQueenSide = castleRights.find(queenSideRight) != std::string::npos
-            && board[row][0].name == FigureName::Rook && board[row][0].color == piece.color
-            && board[row][1].name == FigureName::Empty && board[row][2].name == FigureName::Empty && board[row][3].name == FigureName::Empty
-            && !isSquareAttacked(row, 2, enemyColor) && !isSquareAttacked(row, 3, enemyColor);
+            int rookCol = right - base;
+            const Piece& rook = board[row][rookCol];
+            if (rook.name != FigureName::Rook || rook.color != piece.color) continue;
 
-        if (canKingSide) possibleMoves.push_back({row, 6});
-        if (canQueenSide) possibleMoves.push_back({row, 2});
+            int kingTarget = rookCol > kingCol ? 6 : 2;
+            int rookTarget = rookCol > kingCol ? 5 : 3;
+
+            if (!isCastlingPathClear(row, kingCol, rookCol, kingTarget, rookTarget, enemyColor)) continue;
+
+            possibleMoves.push_back({row, rookCol});
+            if ((kingTarget - kingCol >= 2 || kingCol - kingTarget >= 2) && kingTarget != rookCol) {
+                possibleMoves.push_back({row, kingTarget});
+            }
+        }
     }
 
     bool isEnPassantMove(const Piece& piece, std::array<int, 2> finalCoords) {
@@ -318,7 +345,41 @@ public:
 
         castleRights = "";
         if (fields.size() > 2 && fields[2] != "-") {
-            castleRights = fields[2];
+            for (int i = 0; i < (int)fields[2].size(); i++) {
+                char right = fields[2][i];
+                char upper = (char)std::toupper(right);
+                PieceColor rightColor = std::isupper(right) ? "white" : "black";
+                int rightRow = rightColor == "white" ? 7 : 0;
+                char base = rightColor == "white" ? 'A' : 'a';
+                std::array<int, 2> king = findKing(rightColor);
+
+                if (king[0] != rightRow) continue;
+
+                if (upper == 'K' || upper == 'Q') {
+                    if (king[1] != 4) continue;
+
+                    if (upper == 'K') {
+                        for (int col = 7; col > king[1]; col--) {
+                            if (board[rightRow][col].name == FigureName::Rook && board[rightRow][col].color == rightColor) {
+                                castleRights += (char)(base + col);
+                                break;
+                            }
+                        }
+                    } else {
+                        for (int col = 0; col < king[1]; col++) {
+                            if (board[rightRow][col].name == FigureName::Rook && board[rightRow][col].color == rightColor) {
+                                castleRights += (char)(base + col);
+                                break;
+                            }
+                        }
+                    }
+                } else if (upper >= 'A' && upper <= 'H') {
+                    int col = upper - 'A';
+                    if (board[rightRow][col].name == FigureName::Rook && board[rightRow][col].color == rightColor) {
+                        castleRights += right;
+                    }
+                }
+            }
         }
 
         enPassant = {-1, -1};
@@ -371,8 +432,24 @@ public:
             if (row < 7) fen += '/';
         }
 
+        std::string rights = "";
+        for (int i = 0; i < (int)castleRights.size(); i++) {
+            char right = castleRights[i];
+            PieceColor rightColor = std::isupper(right) ? "white" : "black";
+            std::array<int, 2> king = findKing(rightColor);
+
+            if (king[1] == 4) {
+                if (right == 'H') { rights += 'K'; continue; }
+                if (right == 'A') { rights += 'Q'; continue; }
+                if (right == 'h') { rights += 'k'; continue; }
+                if (right == 'a') { rights += 'q'; continue; }
+            }
+
+            rights += right;
+        }
+
         fen += currColor == "white" ? " w" : " b";
-        fen += castleRights == "" ? " -" : " " + castleRights;
+        fen += rights == "" ? " -" : " " + rights;
         fen += enPassant[0] == -1 ? " -" : " " + translateToNotation(enPassant);
 
         if (withCounters) {
@@ -389,18 +466,9 @@ public:
         if (pos != -1) castleRights.erase(pos, 1);
     }
 
-    void updateCornerRights(std::array<int, 2> coords) {
-        if (coords[0] == 7 && coords[1] == 7) removeCastleRight('K');
-        if (coords[0] == 7 && coords[1] == 0) removeCastleRight('Q');
-        if (coords[0] == 0 && coords[1] == 7) removeCastleRight('k');
-        if (coords[0] == 0 && coords[1] == 0) removeCastleRight('q');
-    }
-
-    void moveRookForCastling(int row, int rookCol, int newRookCol) {
-        Piece rook = board[row][rookCol];
-        board[row][rookCol] = Piece(FigureName::Empty, " ", {row, rookCol});
-        rook.coords = {row, newRookCol};
-        board[row][newRookCol] = rook;
+    void removeRookRights(std::array<int, 2> coords) {
+        if (coords[0] == 7) removeCastleRight((char)('A' + coords[1]));
+        if (coords[0] == 0) removeCastleRight((char)('a' + coords[1]));
     }
 
     void doAMove(Piece piece, std::array<int, 2> finalCoords) {
@@ -417,30 +485,55 @@ public:
 
         if (!isMovePossible) return;
 
-        if (wouldBeInCheck(piece, finalCoords)) {
+        int fromRow = piece.coords[0];
+        int fromCol = piece.coords[1];
+
+        bool isCastling = false;
+        int castlingRookCol = -1;
+
+        if (piece.name == FigureName::King) {
+            const Piece& targetSquare = board[finalCoords[0]][finalCoords[1]];
+
+            if (targetSquare.name == FigureName::Rook && targetSquare.color == piece.color) {
+                isCastling = true;
+                castlingRookCol = finalCoords[1];
+            } else if (finalCoords[1] - fromCol >= 2 || fromCol - finalCoords[1] >= 2) {
+                isCastling = true;
+                char base = piece.color == "white" ? 'A' : 'a';
+
+                for (int i = 0; i < (int)castleRights.size(); i++) {
+                    char right = castleRights[i];
+                    if (right < base || right > (char)(base + 7)) continue;
+                    if ((right - base > fromCol) == (finalCoords[1] > fromCol)) castlingRookCol = right - base;
+                }
+            }
+        }
+
+        if (!isCastling && wouldBeInCheck(piece, finalCoords)) {
             std::cout << "This move would leave the king in check" << std::endl;
             return;
         }
 
-        int fromRow = piece.coords[0];
-        int fromCol = piece.coords[1];
-        bool isCapture = board[finalCoords[0]][finalCoords[1]].name != FigureName::Empty || isEnPassantMove(piece, finalCoords);
+        bool isCapture = !isCastling && (board[finalCoords[0]][finalCoords[1]].name != FigureName::Empty || isEnPassantMove(piece, finalCoords));
 
         if (isEnPassantMove(piece, finalCoords)) {
             board[fromRow][finalCoords[1]] = Piece(FigureName::Empty, " ", {fromRow, finalCoords[1]});
         }
 
-        if (piece.name == FigureName::King && finalCoords[1] - fromCol == 2) {
-            moveRookForCastling(fromRow, 7, 5);
-        }
-        if (piece.name == FigureName::King && fromCol - finalCoords[1] == 2) {
-            moveRookForCastling(fromRow, 0, 3);
-        }
-
         // piece comes in as a copy, so it's safe to clear its old square first
-        board[fromRow][fromCol] = Piece(FigureName::Empty, " ", {fromRow, fromCol});
-        piece.coords = finalCoords;
-        board[finalCoords[0]][finalCoords[1]] = piece;
+        if (isCastling) {
+            int kingTarget = castlingRookCol > fromCol ? 6 : 2;
+            int rookTarget = castlingRookCol > fromCol ? 5 : 3;
+
+            board[fromRow][fromCol] = Piece(FigureName::Empty, " ", {fromRow, fromCol});
+            board[fromRow][castlingRookCol] = Piece(FigureName::Empty, " ", {fromRow, castlingRookCol});
+            board[fromRow][kingTarget] = Piece(FigureName::King, piece.color, {fromRow, kingTarget});
+            board[fromRow][rookTarget] = Piece(FigureName::Rook, piece.color, {fromRow, rookTarget});
+        } else {
+            board[fromRow][fromCol] = Piece(FigureName::Empty, " ", {fromRow, fromCol});
+            piece.coords = finalCoords;
+            board[finalCoords[0]][finalCoords[1]] = piece;
+        }
 
         enPassant = {-1, -1};
         if (piece.name == FigureName::Pawn && (fromRow - finalCoords[0] == 2 || finalCoords[0] - fromRow == 2)) {
@@ -448,11 +541,15 @@ public:
         }
 
         if (piece.name == FigureName::King) {
-            removeCastleRight(piece.color == "white" ? 'K' : 'k');
-            removeCastleRight(piece.color == "white" ? 'Q' : 'q');
+            std::string keptRights = "";
+            for (int i = 0; i < (int)castleRights.size(); i++) {
+                bool isWhiteRight = std::isupper(castleRights[i]) != 0;
+                if ((piece.color == "white") != isWhiteRight) keptRights += castleRights[i];
+            }
+            castleRights = keptRights;
         }
-        updateCornerRights({fromRow, fromCol});
-        updateCornerRights(finalCoords);
+        removeRookRights({fromRow, fromCol});
+        removeRookRights(finalCoords);
 
         halfmoveClock = piece.name == FigureName::Pawn || isCapture ? 0 : halfmoveClock + 1;
         if (piece.color == "black") fullmoveNumber++;

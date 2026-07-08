@@ -179,6 +179,26 @@ int main() {
     b27.promote(FigureName::Rook);
     check("promotion: black promotes to a rook", b27.toFen(), "4k3/8/8/8/8/8/8/r3K3 w - - 0 2");
 
+    Board b28("rk5r/pppppppp/8/8/8/8/PPPPPPPP/RK5R w HAha - 0 1");
+    check("960: rights survive the round-trip", b28.toFen(), "rk5r/pppppppp/8/8/8/8/PPPPPPPP/RK5R w HAha - 0 1");
+    b28.makeMove("b1", "g1");
+    check("960: kingside castle from b1", b28.toFen(), "rk5r/pppppppp/8/8/8/8/PPPPPPPP/R4RK1 b ha - 1 1");
+    b28.makeMove("b8", "a8");
+    check("960: queenside as king takes own rook", b28.toFen(), "2kr3r/pppppppp/8/8/8/8/PPPPPPPP/R4RK1 w - - 2 2");
+
+    Board b29("4r2k/8/8/8/8/8/8/1K5R w H - 0 1");
+    b29.makeMove("b1", "g1");
+    check("960: no castling through an attacked square", b29.toFen(), "4r2k/8/8/8/8/8/8/1K5R w H - 0 1");
+
+    Board b30("1r2k2r/8/8/8/8/8/8/1R2K2R w HBhb - 0 1");
+    b30.makeMove("e1", "b1");
+    check("960: castle with an inner rook", b30.toFen(), "1r2k2r/8/8/8/8/8/8/2KR3R b kb - 1 1");
+
+    Board b31("4k3/8/8/8/8/8/8/R2K3R w KQ - 0 1");
+    check("960: moved king drops stale KQ rights", b31.toFen(), "4k3/8/8/8/8/8/8/R2K3R w - - 0 1");
+    b31.makeMove("d1", "b1");
+    check("960: and castling is impossible", b31.toFen(), "4k3/8/8/8/8/8/8/R2K3R w - - 0 1");
+
     if (failedCount == 0) {
         std::cout << "\nAll tests passed" << std::endl;
     } else {
