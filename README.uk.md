@@ -114,7 +114,22 @@ FetchContent_MakeAvailable(chess-engine)
 target_link_libraries(your-app PRIVATE chess-engine::chessEngine)
 ```
 
-**vcpkg** — у репозиторії є [overlay-порт](ports/chess-engine):
+**vcpkg** — через [власний реєстр](https://github.com/ByteMe6/vcpkg-registry). У `vcpkg-configuration.json` твого проєкту:
+
+```json
+{
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/ByteMe6/vcpkg-registry",
+      "baseline": "b9c34bf297a5f9614d3b902947a34f45fdebaddf",
+      "packages": ["chess-engine"]
+    }
+  ]
+}
+```
+
+далі додай `"chess-engine"` у залежності свого `vcpkg.json`. У репозиторії також є [overlay-порт](ports/chess-engine):
 
 ```bash
 git clone https://github.com/ByteMe6/chess-engine.git

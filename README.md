@@ -111,7 +111,22 @@ FetchContent_MakeAvailable(chess-engine)
 target_link_libraries(your-app PRIVATE chess-engine::chessEngine)
 ```
 
-**vcpkg** — the repo ships an [overlay port](ports/chess-engine):
+**vcpkg** — via the [custom registry](https://github.com/ByteMe6/vcpkg-registry). In your `vcpkg-configuration.json`:
+
+```json
+{
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/ByteMe6/vcpkg-registry",
+      "baseline": "b9c34bf297a5f9614d3b902947a34f45fdebaddf",
+      "packages": ["chess-engine"]
+    }
+  ]
+}
+```
+
+then add `"chess-engine"` to the dependencies of your `vcpkg.json`. An [overlay port](ports/chess-engine) also ships in this repo:
 
 ```bash
 git clone https://github.com/ByteMe6/chess-engine.git
